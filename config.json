@@ -1,0 +1,18 @@
+{
+    "cameras": [
+        {
+            "name": "abc",
+            "guid": "cam_ba9bc1d6",
+            "url": "http://localhost:56000/mjpeg",
+            "username": "",
+            "password": ""
+        },
+        {
+            "name": "camera2",
+            "guid": "cam_d98e5c41",
+            "url": "http://localhost:56000/mjpeg",
+            "username": "",
+            "password": ""
+        }
+    ]
+}

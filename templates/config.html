@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Configuration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .camera-form {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+        .camera-list {
+            margin-top: 20px;
+        }
+        .camera-item {
+            padding: 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .camera-item h3 {
+            margin: 0 0 10px 0;
+        }
+        .camera-item p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+        }
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">← Back to Home</a>
+        <h1>Camera Configuration</h1>
+
+        <div class="camera-form">
+            <h2>Add New Camera</h2>
+            <form action="/config/save" method="POST">
+                <div class="form-group">
+                    <label for="name">Camera Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="url">Camera URL:</label>
+                    <input type="text" id="url" name="url" required>
+                </div>
+                <div class="form-group">
+                    <label for="username">Username (optional):</label>
+                    <input type="text" id="username" name="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password (optional):</label>
+                    <input type="password" id="password" name="password">
+                </div>
+                <button type="submit" class="button">Save Camera</button>
+            </form>
+        </div>
+
+        <div class="camera-list">
+            <h2>Configured Cameras</h2>
+            {% for camera in cameras %}
+            <div class="camera-item">
+                <form action="/config/delete" method="POST" style="display: inline;">
+                    <input type="hidden" name="index" value="{{ loop.index0 }}">
+                    <button type="submit" class="delete-button">Delete</button>
+                </form>
+                <h3>{{ camera.name }}</h3>
+                <p><strong>URL:</strong> {{ camera.url }}</p>
+                {% if camera.username %}
+                <p><strong>Username:</strong> {{ camera.username }}</p>
+                {% endif %}
+                {% if camera.password %}
+                <p><strong>Password:</strong> ********</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html> 

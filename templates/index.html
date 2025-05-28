@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Streaming Server</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .video-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .config-button {
+            background-color: #6c757d;
+        }
+        .config-button:hover {
+            background-color: #5a6268;
+        }
+        .camera-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .camera-item {
+            padding: 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .camera-item h3 {
+            margin: 0 0 10px 0;
+        }
+        .recordings-section {
+            margin-top: 20px;
+        }
+        .date-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .date-header {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .camera-section {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+        .camera-header {
+            font-size: 1.1em;
+            color: #444;
+            margin-bottom: 10px;
+        }
+        .recording-item {
+            padding: 10px;
+            background-color: white;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Streaming Server</h1>
+        
+        <div class="video-section">
+            <h2>Live Streams</h2>
+            <a href="/config" class="button config-button">Configure Cameras</a>
+            {% if cameras %}
+                <div class="camera-grid">
+                    {% for camera in cameras %}
+                        <div class="camera-item">
+                            <h3>{{ camera.name }}</h3>
+                            <a href="/live/{{ loop.index0 }}" class="button">View Stream</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No cameras configured. <a href="/config">Add a camera</a></p>
+            {% endif %}
+        </div>
+
+        <div class="video-section">
+            <h2>Recorded Videos</h2>
+            {% if recordings %}
+                {% for date, cameras in recordings.items() %}
+                    <div class="date-section">
+                        <div class="date-header">{{ date }}</div>
+                        {% for camera_guid, files in cameras.items() %}
+                            <div class="camera-section">
+                                <div class="camera-header">{{ get_camera_name(camera_guid) }}</div>
+                                {% for file in files %}
+                                    <div class="recording-item">
+                                        <a href="/recorded/{{ date }}/{{ camera_guid }}/{{ file }}" class="button">
+                                            Play Recording
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No recorded videos available.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html> 
