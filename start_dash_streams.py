@@ -23,9 +23,9 @@ def start_dash_stream(camera):
         "ffmpeg",
         "-y",  # Overwrite output files without asking
         "-i", camera["url"],
-        "-c:v", "copy",  # Copy video stream
+       '-c:a', 'aac', 
         "-f", "dash",
-        "-seg_duration", "2",
+        "-seg_duration", "10",
         "-init_seg_name", f"{output_dir}/init.m4s",
         "-media_seg_name", f"{output_dir}/chunk-$Number%05d$.m4s",
         "-use_timeline", "1",
