@@ -26,8 +26,8 @@ def start_dash_stream(camera):
         "-c:v", "copy",  # Copy video stream
         "-f", "dash",
         "-seg_duration", "2",
-        "-init_seg_name", f"{output_dir}/init-stream0.m4s",
-        "-media_seg_name", f"{output_dir}/chunk-%d.m4s",
+        "-init_seg_name", f"{output_dir}/init.m4s",
+        "-media_seg_name", f"{output_dir}/chunk-$Number%05d$.m4s",
         "-use_timeline", "1",
         "-use_template", "1",
         str(output_path)
