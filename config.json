@@ -1,16 +1,23 @@
 {
     "cameras": [
         {
-            "name": "abc",
-            "guid": "cam_ba9bc1d6",
+            "name": "mine",
+            "guid": "cam_4f9a1938",
             "url": "http://localhost:56000/mjpeg",
             "username": "",
             "password": ""
         },
         {
-            "name": "camera2",
-            "guid": "cam_d98e5c41",
+            "name": "mine2",
+            "guid": "cam_0dd1259b",
             "url": "http://localhost:56000/mjpeg",
+            "username": "",
+            "password": ""
+        },
+        {
+            "name": "mohan",
+            "guid": "cam_6062dd11",
+            "url": "http://192.168.1.19:56000/mjpeg",
             "username": "",
             "password": ""
         }
