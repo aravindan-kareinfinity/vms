@@ -121,6 +121,14 @@ def recorded(camera_guid, date, filename):
 @app.route('/dashvideos/<path:filename>')
 def serve_dash(filename):
     """Serve DASH video files"""
+    # Handle the full path structure
+    parts = filename.split('/')
+    if len(parts) >= 3:  # date/camera_guid/filename
+        date = parts[0]
+        camera_guid = parts[1]
+        file = '/'.join(parts[2:])
+        base_dir = Path("E:/bala/version1/dashvideos")
+        return send_from_directory(str(base_dir / date / camera_guid), file)
     return send_from_directory('dashvideos', filename)
 
 if __name__ == '__main__':

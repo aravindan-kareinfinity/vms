@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recorded Video - {{ camera_name }}</title>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
+            margin: 20px;
+            background-color: #f5f5f5;
         }
         .container {
             max-width: 1200px;
@@ -22,52 +23,105 @@
             color: #333;
             margin-bottom: 20px;
         }
-        .video-info {
-            color: #666;
-            margin-bottom: 20px;
-        }
         .video-container {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
+            margin: 20px 0;
         }
-        video {
+        #videoPlayer {
             width: 100%;
+            max-width: 1280px;
             height: auto;
+            background-color: #000;
         }
-        .back-button {
+        .info {
+            margin: 10px 0;
+            color: #666;
+        }
+        .back-link {
             display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
+            margin-top: 20px;
+            color: #0066cc;
             text-decoration: none;
-            border-radius: 4px;
-            margin-bottom: 20px;
         }
-        .back-button:hover {
-            background-color: #0056b3;
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        #debugInfo {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-button">← Back to Home</a>
-        <h1>Recorded Video</h1>
-        <div class="video-info">
-            <p><strong>Camera:</strong> {{ camera_name }}</p>
-            <p><strong>Date:</strong> {{ date }}</p>
+        <h1>Recorded Video - {{ camera_name }}</h1>
+        <div class="info">
+            <p>Date: {{ date }}</p>
         </div>
+        
         <div class="video-container">
-            <video id="videoPlayer" controls></video>
+            <video id="videoPlayer" controls muted autoplay>
+                Your browser does not support the video tag.
+            </video>
         </div>
+
+        <div id="debugInfo">Loading debug information...</div>
+
+        <a href="/" class="back-link">← Back to Home</a>
     </div>
 
     <script>
         (function() {
-            var url = "/dashvideos/{{ video_path }}";
-            var player = dashjs.MediaPlayer().create();
-            player.initialize(document.querySelector("#videoPlayer"), url, true);
+            const debugInfo = document.getElementById('debugInfo');
+            const videoPlayer = document.getElementById('videoPlayer');
+            
+            // Get the current server URL and construct the manifest URL
+            const baseUrl = window.location.origin;  // Gets http://localhost:5000
+            const url = `${baseUrl}/dashvideos/{{ video_path }}`;
+            
+            function updateDebugInfo(message) {
+                const timestamp = new Date().toISOString();
+                debugInfo.innerHTML += `\n[${timestamp}] ${message}`;
+            }
+
+            updateDebugInfo(`Loading manifest from: ${url}`);
+            
+            // Create and configure the player
+            const player = dashjs.MediaPlayer().create();
+            
+            // Configure for dynamic streaming
+            player.updateSettings({
+                'streaming': {
+                    'buffer': {
+                        'bufferTimeAtTopQuality': 30
+                    },
+                    'lowLatencyEnabled': false,
+                    'liveCatchUpPlaybackRate': 0.5,
+                    'liveCatchUpMaxDrift': 12,
+                    'liveCatchUpMinDrift': 0.05
+                }
+            });
+
+            // Add basic event listeners
+            player.on(dashjs.MediaPlayer.events.MANIFEST_LOADED, function(e) {
+                updateDebugInfo('Manifest loaded successfully');
+            });
+
+            player.on(dashjs.MediaPlayer.events.ERROR, function(error) {
+                updateDebugInfo('Error: ' + JSON.stringify(error));
+            });
+
+            player.on(dashjs.MediaPlayer.events.PLAYBACK_PLAYING, function(e) {
+                updateDebugInfo('Playback started');
+            });
+
+            // Initialize the player
+            player.initialize(videoPlayer, url, true);
         })();
     </script>
 </body>
-</html> 
+</html>
