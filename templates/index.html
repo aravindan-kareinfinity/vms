@@ -130,8 +130,11 @@
                                 <div class="camera-header">{{ get_camera_name(camera_guid) }}</div>
                                 {% for file in files %}
                                     <div class="recording-item">
-                                        <a href="/recorded/{{ date }}/{{ camera_guid }}/{{ file }}" class="button">
+                                        <!-- <a href="/recorded/{{ date }}/{{ camera_guid }}/manifest.mpd" class="button">
                                             Play Recording
+                                        </a> -->
+                                        <a href="/download_mp4/{{ date }}/{{ camera_guid }}" class="button" style="background-color: #28a745;">
+                                            Download MP4
                                         </a>
                                     </div>
                                 {% endfor %}

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recorded Video - {{ camera_name }}</title>
+    <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
     <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
     <style>
         body {
@@ -54,6 +56,19 @@
             font-family: monospace;
             white-space: pre-wrap;
         }
+        .video-js {
+            width: 100%;
+            height: 720px;
+        }
+        .snapshot-badge {
+            display: inline-block;
+            margin: 10px 0;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -61,6 +76,9 @@
         <h1>Recorded Video - {{ camera_name }}</h1>
         <div class="info">
             <p>Date: {{ date }}</p>
+            {% if is_snapshot %}
+            <span class="snapshot-badge">Playing Snapshot</span>
+            {% endif %}
         </div>
         
         <div class="video-container">
