@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template, send_from_directory, request, redirect, url_for
+from flask import Flask, Response, render_template, send_from_directory, request, redirect, url_for, send_file
 from flask_cors import CORS
 import os
 import json
@@ -210,6 +210,84 @@ def serve_dash(filename):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     response.headers.add('Access-Control-Allow-Methods', 'GET')
     return response
+
+@app.route('/download_mp4/<date>/<camera_guid>')
+def download_mp4(date, camera_guid):
+    """Convert DASH video to MP4 and provide download"""
+    base_dir = Path("E:/bala/version1/dashvideos")
+    source_dir = base_dir / date / camera_guid
+    output_mp4 = source_dir / f"{camera_guid}_{date}.mp4"
+    
+    # Check if manifest exists
+    manifest_path = source_dir / "manifest.mpd"
+    if not manifest_path.exists():
+        print(f"Manifest file not found at: {manifest_path}")
+        return "Manifest file not found", 404
+    
+    try:
+        # Create a temporary manifest with relative paths
+        temp_manifest = source_dir / "temp_manifest.mpd"
+        with open(manifest_path, 'r') as f:
+            manifest_content = f.read()
+        
+        # Replace absolute paths with relative paths
+        manifest_content = manifest_content.replace(
+            f"E:\\bala\\version1\\dashvideos\\{date}\\{camera_guid}/",
+            ""
+        )
+        
+        with open(temp_manifest, 'w') as f:
+            f.write(manifest_content)
+        
+        # Use ffmpeg to convert DASH to MP4
+        cmd = [
+            "ffmpeg",
+            "-i", str(temp_manifest),
+            "-c", "copy",  # Copy streams without re-encoding
+            "-movflags", "+faststart",  # Enable fast start for web playback
+            "-y",  # Overwrite output file if it exists
+            str(output_mp4)
+        ]
+        
+        print(f"Running ffmpeg command: {' '.join(cmd)}")
+        
+        # Run the conversion
+        process = subprocess.run(cmd, capture_output=True, text=True)
+        
+        # Clean up temporary manifest
+        try:
+            temp_manifest.unlink()
+        except Exception as e:
+            print(f"Warning: Could not delete temporary manifest: {e}")
+        
+        if process.returncode != 0:
+            print(f"Error converting video: {process.stderr}")
+            return f"Error converting video: {process.stderr}", 500
+        
+        if not output_mp4.exists():
+            print(f"Output file was not created at: {output_mp4}")
+            return "Error: Output file was not created", 500
+            
+        print(f"Successfully created MP4 at: {output_mp4}")
+        
+        # Send the file for download with proper headers
+        response = send_file(
+            output_mp4,
+            as_attachment=True,
+            download_name=f"{camera_guid}_{date}.mp4",
+            mimetype='video/mp4'
+        )
+        
+        # Add CORS headers
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'GET')
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error in download_mp4: {str(e)}")
+        return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True) 
