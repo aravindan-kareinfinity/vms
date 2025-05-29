@@ -5,12 +5,12 @@
 	xsi:schemaLocation="urn:mpeg:DASH:schema:MPD:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd"
 	profiles="urn:mpeg:dash:profile:isoff-live:2011"
 	type="dynamic"
-	minimumUpdatePeriod="PT5S"
-	availabilityStartTime="2025-05-29T06:45:17.847Z"
-	publishTime="2025-05-29T06:46:43.988Z"
-	timeShiftBufferDepth="PT57.6S"
+	minimumUpdatePeriod="PT0S"
+	availabilityStartTime="2025-05-29T07:42:45.083Z"
+	publishTime="2025-05-29T07:42:45.086Z"
+	timeShiftBufferDepth="PT0.0S"
 	maxSegmentDuration="PT4.0S"
-	minBufferTime="PT1.9S">
+	minBufferTime="PT0.0S">
 	<ProgramInformation>
 	</ProgramInformation>
 	<ServiceDescription id="0">
@@ -19,11 +19,8 @@
 		<AdaptationSet id="0" contentType="video" startWithSAP="1" segmentAlignment="true" bitstreamSwitching="true" frameRate="25/1" maxWidth="640" maxHeight="480" par="4:3">
 			<Resync dT="40000" type="0"/>
 			<Representation id="0" mimeType="video/mp4" codecs="avc1.64001e" bandwidth="2000000" width="640" height="480" sar="1:1">
-				<Resync dT="1920000" type="1"/>
-				<SegmentTemplate timescale="12800" availabilityTimeComplete="false" initialization="init.m4s" media="chunk-$Number%05d$.m4s" startNumber="1">
+				<SegmentTemplate timescale="12800" availabilityTimeComplete="false" initialization="E:\bala\version1\dashvideos\2025-05-29\cam_ba9bc1d6/init.m4s" media="E:\bala\version1\dashvideos\2025-05-29\cam_ba9bc1d6/chunk-$Number%05d$.m4s" startNumber="1">
 					<SegmentTimeline>
-						<S t="0" d="73216" />
-						<S d="73728" r="6" />
 					</SegmentTimeline>
 				</SegmentTemplate>
 			</Representation>
