@@ -79,9 +79,20 @@ def start_dash_stream(camera):
 
 def get_dash_output_dir(camera_guid):
     """Get the output directory for DASH files"""
+    # Get current date
     date_str = datetime.now().strftime("%Y-%m-%d")
     output_dir = Path("E:/bala/version1/dashvideos") / date_str / camera_guid
     output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Check if we need to create a new date folder
+    current_time = datetime.now()
+    if current_time.hour == 0 and current_time.minute < 5:  # Check if it's just after midnight
+        # Create new date folder
+        new_date_str = current_time.strftime("%Y-%m-%d")
+        new_output_dir = DASH_VIDEOS_DIR / new_date_str / camera_guid
+        new_output_dir.mkdir(parents=True, exist_ok=True)
+        return new_output_dir
+    
     return output_dir
 
 # Store running processes
@@ -199,23 +210,23 @@ def serve_dash(filename):
         date = parts[0]
         camera_guid = parts[1]
         file = '/'.join(parts[2:])
-        base_dir = Path("E:/bala/version1/dashvideos")
-        response = send_from_directory(str(base_dir / date / camera_guid), file)
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'GET')
+        
+        # Check if this is a snapshot request
+        if "_snapshots" in camera_guid:
+            # Extract the actual camera GUID by removing _snapshots
+            actual_camera_guid = camera_guid.replace("_snapshots", "")
+            # Serve from the snapshot directory but don't expose it in the URL
+            response = send_from_directory(str(DASH_VIDEOS_DIR / date / camera_guid), file)
+        else:
+            response = send_from_directory(str(DASH_VIDEOS_DIR / date / camera_guid), file)
         return response
     response = send_from_directory('dashvideos', filename)
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-    response.headers.add('Access-Control-Allow-Methods', 'GET')
     return response
 
 @app.route('/download_mp4/<date>/<camera_guid>')
 def download_mp4(date, camera_guid):
     """Convert DASH video to MP4 and provide download"""
-    base_dir = Path("E:/bala/version1/dashvideos")
-    source_dir = base_dir / date / camera_guid
+    source_dir = DASH_VIDEOS_DIR / date / camera_guid
     output_mp4 = source_dir / f"{camera_guid}_{date}.mp4"
     
     # Check if manifest exists
@@ -277,11 +288,6 @@ def download_mp4(date, camera_guid):
             download_name=f"{camera_guid}_{date}.mp4",
             mimetype='video/mp4'
         )
-        
-        # Add CORS headers
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'GET')
         
         return response
         
