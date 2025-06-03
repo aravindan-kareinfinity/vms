@@ -81,7 +81,7 @@
             
             // Get the current server URL and construct the manifest URL
             const baseUrl = window.location.origin;  // Gets http://localhost:5000
-            const url = `${baseUrl}/dashvideos/{{ video_path }}`;
+            const url = `${baseUrl}/dashvideos/${encodeURIComponent('{{ video_path }}')}`;
             
             function updateDebugInfo(message) {
                 const timestamp = new Date().toISOString();

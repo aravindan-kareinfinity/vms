@@ -80,7 +80,7 @@ def start_dash_stream(camera):
 def get_dash_output_dir(camera_guid):
     """Get the output directory for DASH files"""
     date_str = datetime.now().strftime("%Y-%m-%d")
-    output_dir = Path("E:/bala/version1/dashvideos") / date_str / camera_guid
+    output_dir = DASH_VIDEOS_DIR / date_str / camera_guid
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
 
@@ -195,11 +195,11 @@ def serve_dash(filename):
     """Serve DASH video files"""
     # Handle the full path structure
     parts = filename.split('/')
-    if len(parts) >= 3:  # date/camera_guid/filename
-        date = parts[0]
-        camera_guid = parts[1]
+    if len(parts) >= 3:  # camera_guid/date/filename
+        camera_guid = parts[0]
+        date = parts[1]
         file = '/'.join(parts[2:])
-        base_dir = Path("E:/bala/version1/dashvideos")
+        base_dir = DASH_VIDEOS_DIR
         response = send_from_directory(str(base_dir / date / camera_guid), file)
         response.headers.add('Access-Control-Allow-Origin', '*')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
@@ -214,80 +214,70 @@ def serve_dash(filename):
 @app.route('/download_mp4/<date>/<camera_guid>')
 def download_mp4(date, camera_guid):
     """Convert DASH video to MP4 and provide download"""
-    base_dir = Path("E:/bala/version1/dashvideos")
+    base_dir = DASH_VIDEOS_DIR.absolute()
     source_dir = base_dir / date / camera_guid
     output_mp4 = source_dir / f"{camera_guid}_{date}.mp4"
+    
+    # Verify directory exists
+    if not source_dir.exists():
+        return "Recording directory not found", 404
     
     # Check if manifest exists
     manifest_path = source_dir / "manifest.mpd"
     if not manifest_path.exists():
-        print(f"Manifest file not found at: {manifest_path}")
         return "Manifest file not found", 404
     
     try:
-        # Create a temporary manifest with relative paths
-        temp_manifest = source_dir / "temp_manifest.mpd"
-        with open(manifest_path, 'r') as f:
-            manifest_content = f.read()
+        # Check if MP4 already exists
+        if output_mp4.exists():
+            return send_file(
+                output_mp4,
+                as_attachment=True,
+                download_name=f"{get_camera_name_by_guid(camera_guid)}_{date}.mp4",
+                mimetype='video/mp4'
+            )
         
-        # Replace absolute paths with relative paths
-        manifest_content = manifest_content.replace(
-            f"E:\\bala\\version1\\dashvideos\\{date}\\{camera_guid}/",
-            ""
-        )
+        # Convert paths to forward slashes for FFmpeg
+        manifest_path_ffmpeg = str(manifest_path).replace('\\', '/')
+        output_mp4_ffmpeg = str(output_mp4).replace('\\', '/')
         
-        with open(temp_manifest, 'w') as f:
-            f.write(manifest_content)
-        
-        # Use ffmpeg to convert DASH to MP4
+        # Use ffmpeg to convert DASH to MP4 with more robust settings
         cmd = [
             "ffmpeg",
-            "-i", str(temp_manifest),
-            "-c", "copy",  # Copy streams without re-encoding
-            "-movflags", "+faststart",  # Enable fast start for web playback
-            "-y",  # Overwrite output file if it exists
-            str(output_mp4)
+            "-protocol_whitelist", "file,http,https,tcp,tls,crypto",
+            "-i", manifest_path_ffmpeg,
+            "-c:v", "copy",  # Copy video stream without re-encoding
+            "-c:a", "copy",  # Copy audio stream without re-encoding
+            "-f", "mp4",
+            "-movflags", "+faststart",  # Enable streaming
+            "-y",  # Overwrite output
+            output_mp4_ffmpeg
         ]
         
-        print(f"Running ffmpeg command: {' '.join(cmd)}")
+        # Print the command for debugging
+        print("Running FFmpeg command:", " ".join(cmd))
         
         # Run the conversion
         process = subprocess.run(cmd, capture_output=True, text=True)
         
-        # Clean up temporary manifest
-        try:
-            temp_manifest.unlink()
-        except Exception as e:
-            print(f"Warning: Could not delete temporary manifest: {e}")
-        
         if process.returncode != 0:
-            print(f"Error converting video: {process.stderr}")
+            print("FFmpeg stderr:", process.stderr)
             return f"Error converting video: {process.stderr}", 500
         
         if not output_mp4.exists():
-            print(f"Output file was not created at: {output_mp4}")
             return "Error: Output file was not created", 500
             
-        print(f"Successfully created MP4 at: {output_mp4}")
-        
-        # Send the file for download with proper headers
-        response = send_file(
+        # Send the file for download
+        return send_file(
             output_mp4,
             as_attachment=True,
-            download_name=f"{camera_guid}_{date}.mp4",
+            download_name=f"{get_camera_name_by_guid(camera_guid)}_{date}.mp4",
             mimetype='video/mp4'
         )
         
-        # Add CORS headers
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'GET')
-        
-        return response
-        
     except Exception as e:
-        print(f"Error in download_mp4: {str(e)}")
+        print("Exception during conversion:", str(e))
         return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True) 
+    app.run(host='0.0.0.0', port=5001, debug=True) 

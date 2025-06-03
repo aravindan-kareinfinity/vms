@@ -6,13 +6,16 @@ from datetime import datetime
 # Store running processes
 running_processes = []
 
+# Directory where DASH videos are stored
+DASH_VIDEOS_DIR = Path("dashvideos")
+
 def load_config():
     with open("config.json") as f:
         return json.load(f)
 
 def get_dash_output_dir(camera_guid):
     date_str = datetime.now().strftime("%Y-%m-%d")
-    output_dir = Path("E:/bala/version1/dashvideos") / date_str / camera_guid
+    output_dir = DASH_VIDEOS_DIR / date_str / camera_guid
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
 
