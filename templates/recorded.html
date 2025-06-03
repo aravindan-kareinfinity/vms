@@ -81,14 +81,14 @@
             
             // Get the current server URL and construct the manifest URL
             const baseUrl = window.location.origin;  // Gets http://localhost:5000
-            const url = `${baseUrl}/dashvideos/${encodeURIComponent('{{ video_path }}')}`;
+            const manifestUrl = `${baseUrl}/dashvideos/{{ video_path }}`;
             
             function updateDebugInfo(message) {
                 const timestamp = new Date().toISOString();
                 debugInfo.innerHTML += `\n[${timestamp}] ${message}`;
             }
 
-            updateDebugInfo(`Loading manifest from: ${url}`);
+            updateDebugInfo(`Loading manifest from: ${manifestUrl}`);
             
             // Create and configure the player
             const player = dashjs.MediaPlayer().create();
@@ -119,8 +119,16 @@
                 updateDebugInfo('Playback started');
             });
 
+            // Set base URL for media segments
+            const baseUri = manifestUrl.substring(0, manifestUrl.lastIndexOf('/') + 1);
+            player.updateSettings({
+                'streaming': {
+                    'baseURL': baseUri
+                }
+            });
+
             // Initialize the player
-            player.initialize(videoPlayer, url, true);
+            player.initialize(videoPlayer, manifestUrl, true);
         })();
     </script>
 </body>
